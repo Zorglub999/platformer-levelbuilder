@@ -217,8 +217,8 @@ namespace PlatformerEngine.Source.Entities
             // Push away from wall to fall off
             if ((wallLeft && InputManager.Movement.X > 0) || (wallRight && InputManager.Movement.X < 0))
             {
-                // Small timer or just let standard movement take over in next frame?
-                // Standard movement will apply force away, so we just transition to Fall in UpdateStateTransitions
+                velocity.X = InputManager.Movement.X * MoveSpeed;
+                CurrentState = PlayerState.Fall;
             }
 
             // Dash from wall

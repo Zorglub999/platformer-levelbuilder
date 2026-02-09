@@ -37,3 +37,4 @@ C:\Users\Zorglub\Desktop\game-projects\platformer-1\PlatformerEngine\obj\Debug\n
 C:\Users\Zorglub\Desktop\game-projects\platformer-1\PlatformerEngine\obj\Debug\net8.0\PlatformerEngine.pdb
 C:\Users\Zorglub\Desktop\game-projects\platformer-1\PlatformerEngine\obj\Debug\net8.0\PlatformerEngine.genruntimeconfig.cache
 C:\Users\Zorglub\Desktop\game-projects\platformer-1\PlatformerEngine\obj\Debug\net8.0\ref\PlatformerEngine.dll
+C:\Users\Zorglub\Desktop\game-projects\platformer-1\PlatformerEngine\obj\Debug\net8.0\PlatformerEngine.sourcelink.json
