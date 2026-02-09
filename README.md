@@ -1,25 +1,25 @@
 # Platformer Engine
 
-A high-performance 2D platformer framework built with **MonoGame** and **ImGui.NET**, designed for precision gameplay and rapid development.
+A 2D platformer framework built with **MonoGame** and **ImGui.NET**, designed for quick gameplay and easy level editing.
 
-## 🚀 Features
+## Features
 
-- **Advanced Physics**: Custom AABB physics engine featuring:
-  - Precise collision detection and resolution.
+- **Advanced Physics**: physics engine with:
+  - Platformer collisions.
   - Wall sliding and wall jumping.
   - Variable jump height and dashing mechanics.
-  - Support for moving/draggable platforms.
+  - Support for moving/draggable platforms (Bit wanky right now).
 - **Optimized Rendering**: 
   - 512x512 TileMap system with view culling for high performance.
   - Smooth camera tracking with lerp smoothing.
 - **Developer Tools**:
   - Integrated **ImGui** for realtime debugging and level editing.
-  - Persistent settings management (Video, Audio, Gameplay) via JSON.
+  - Persistent settings via JSON.
 - **Game Elements**:
   - Player controller with distinct states (Idle, Run, Jump, Fall, WallSlide, Dash).
   - Hazard tiles (Kill Blocks) and Checkpoint system.
 
-## 🎮 Controls
+## Controls
 
 | Action | Input |
 |--------|-------|
@@ -29,7 +29,9 @@ A high-performance 2D platformer framework built with **MonoGame** and **ImGui.N
 | **Debug Respawn** | `P` |
 | **UI Interaction** | `Mouse` |
 
-## 🛠️ Getting Started
+(Also playable on controller)
+
+## Getting Started
 
 ### Prerequisites
 - [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
@@ -40,9 +42,12 @@ A high-performance 2D platformer framework built with **MonoGame** and **ImGui.N
    ```bash
    dotnet run --project PlatformerEngine
    ```
-   *Or open `PlatformerEngine/PlatformerEngine.csproj` in Visual Studio / Rider.*
+   Or you can also go in /PlatformerEngine and run :
+   ```bash
+   dotnet run
+   ```
 
-## 📂 Project Structure
+## Project Structure
 
 - **PlatformerEngine/**: Main game source code.
   - **Source/Core/**: Engine systems (Camera, Input, Settings).
