@@ -1,0 +1,23 @@
+[biO]bj/
+[bB]in/
+*.user
+*.userosscache
+*.suo
+.vs/
+*.v2
+*.lock.json
+stylecop.json
+_ReSharper*/
+
+# Windows image file caches
+Thumbs.db
+ehthumbs.db
+
+# Folder config file
+Desktop.ini
+
+# Mac
+.DS_Store
+
+# Visual Studio Code
+.vscode/
