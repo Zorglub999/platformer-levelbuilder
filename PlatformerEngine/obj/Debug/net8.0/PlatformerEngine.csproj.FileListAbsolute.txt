@@ -4,6 +4,7 @@ C:\Users\Zorglub\Desktop\game-projects\platformer-1\PlatformerEngine\obj\Debug\n
 C:\Users\Zorglub\Desktop\game-projects\platformer-1\PlatformerEngine\obj\Debug\net8.0\PlatformerEngine.AssemblyInfoInputs.cache
 C:\Users\Zorglub\Desktop\game-projects\platformer-1\PlatformerEngine\obj\Debug\net8.0\PlatformerEngine.AssemblyInfo.cs
 C:\Users\Zorglub\Desktop\game-projects\platformer-1\PlatformerEngine\obj\Debug\net8.0\PlatformerEngine.csproj.CoreCompileInputs.cache
+C:\Users\Zorglub\Desktop\game-projects\platformer-1\PlatformerEngine\obj\Debug\net8.0\PlatformerEngine.sourcelink.json
 C:\Users\Zorglub\Desktop\game-projects\platformer-1\PlatformerEngine\bin\Debug\net8.0\PlatformerEngine.exe
 C:\Users\Zorglub\Desktop\game-projects\platformer-1\PlatformerEngine\bin\Debug\net8.0\PlatformerEngine.deps.json
 C:\Users\Zorglub\Desktop\game-projects\platformer-1\PlatformerEngine\bin\Debug\net8.0\PlatformerEngine.runtimeconfig.json
@@ -37,4 +38,3 @@ C:\Users\Zorglub\Desktop\game-projects\platformer-1\PlatformerEngine\obj\Debug\n
 C:\Users\Zorglub\Desktop\game-projects\platformer-1\PlatformerEngine\obj\Debug\net8.0\PlatformerEngine.pdb
 C:\Users\Zorglub\Desktop\game-projects\platformer-1\PlatformerEngine\obj\Debug\net8.0\PlatformerEngine.genruntimeconfig.cache
 C:\Users\Zorglub\Desktop\game-projects\platformer-1\PlatformerEngine\obj\Debug\net8.0\ref\PlatformerEngine.dll
-C:\Users\Zorglub\Desktop\game-projects\platformer-1\PlatformerEngine\obj\Debug\net8.0\PlatformerEngine.sourcelink.json

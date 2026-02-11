@@ -42,6 +42,9 @@ public class Game1 : Game
     private LevelEditor levelEditor;
     private bool isEditorMode = false;
 
+    // UI Systems
+    private PlatformerEngine.Source.UI.MenuSystem menuSystem;
+
     // Game State
     private GameState currentState = GameState.MainMenu;
 
@@ -118,7 +121,28 @@ public class Game1 : Game
             assetLoader
         );
 
+        // Initialize Menu System
+        menuSystem = new PlatformerEngine.Source.UI.MenuSystem(this);
+        menuSystem.LoadContent();
+
         previousKeyboardState = Keyboard.GetState();
+    }
+
+    // Public methods for MenuSystem to call
+    public void StartGame()
+    {
+        RefreshLevelList();
+        currentState = GameState.LevelSelect;
+    }
+
+    public void OpenSettings()
+    {
+        currentState = GameState.Settings;
+    }
+
+    public void OpenCredits()
+    {
+        currentState = GameState.Credits;
     }
 
     private void LoadLevel(string filename)
@@ -127,11 +151,7 @@ public class Game1 : Game
         string path = System.IO.Path.Combine("Levels", filename);
         // Pass draggableBlocks and pixelTexture to Load
         tileMap.Load(path, draggableBlocks, pixelTexture);
-        // No need to clear draggableBlocks here as Load now handles it (or clears it if new list is passed)
-        // actually Load clears it internally if we pass the list.
-        // Reset player if spawn point not found
-        // Reset player if spawn point not found
-        // Reset player if spawn point not found
+
         player.Position = new Vector2(100, 100);
 
         // Find spawn point in map
@@ -200,16 +220,16 @@ public class Game1 : Game
             }
         }
 
-        // Animated Menu Background Update
-        if (currentState != GameState.Playing)
+        // Update logic based on state
+        if (currentState == GameState.MainMenu)
         {
+            menuSystem.Update(gameTime);
+        }
+        else if (currentState != GameState.Playing)
+        {
+            // Other menus updated via ImGui logic or checking inputs if needed
             menuTime += (float)gameTime.ElapsedGameTime.TotalSeconds;
-            // Spawn some background particles
-            if (Random.NextDouble() < 0.1)
-            {
-                Vector2 pos = new Vector2(Random.Next(_graphics.PreferredBackBufferWidth), _graphics.PreferredBackBufferHeight + 10);
-                particleSystem.Spawn(pos, 1, new Vector2(0, -2), 0.5f); // Floating up
-            }
+            // Existing particle system update for other menus if any
             particleSystem.Update();
         }
 
@@ -235,9 +255,6 @@ public class Game1 : Game
                 if (keyboardState.IsKeyDown(Keys.S) || keyboardState.IsKeyDown(Keys.Down)) camera.Position += new Vector2(0, camSpeed);
                 if (keyboardState.IsKeyDown(Keys.A) || keyboardState.IsKeyDown(Keys.Left)) camera.Position += new Vector2(-camSpeed, 0);
                 if (keyboardState.IsKeyDown(Keys.D) || keyboardState.IsKeyDown(Keys.Right)) camera.Position += new Vector2(camSpeed, 0);
-
-                // Ensure camera doesn't drift efficiently? iterating clamping might be good but free cam is free cam.
-                // We do NOT call camera.Update(player) here.
             }
             else
             {
@@ -268,9 +285,13 @@ public class Game1 : Game
     {
         GraphicsDevice.Clear(new Color(20, 20, 30)); // Deep dark blue background for menu
 
-        if (currentState != GameState.Playing)
+        if (currentState == GameState.MainMenu)
         {
-            // Draw menu background particles
+            menuSystem.Draw(gameTime);
+        }
+        else if (currentState != GameState.Playing)
+        {
+            // Draw menu background particles for other states (LevelSelect, Settings)
             _spriteBatch.Begin(blendState: BlendState.Additive);
             particleSystem.Draw(_spriteBatch, pixelTexture);
             _spriteBatch.End();
@@ -293,16 +314,7 @@ public class Game1 : Game
                 transformMatrix: viewMatrix
             );
 
-            // Draw tilemap with culling
-            // In Game Mode (not Editor), we might want different visibility rules, 
-            // but the user requirement said "Show Colliders" checkbox controls it. 
-            // Since the checkbox is in LevelEditor, we use its state.
-            // If LevelEditor is null (shouldn't be), default to true.
             bool showColliders = levelEditor?.ShowColliders ?? true;
-
-            // However, usually in "Game Mode" (when playing), we might NOT want to see colliders by default if looking for "beauty".
-            // But the user said: "decocher 'Show Colliders' pour que le jeu soit beau". 
-            // This implies the checkbox in Editor controls global rendering.
 
             tileMap.Draw(_spriteBatch, camera, _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight, assetLoader, showColliders);
 
@@ -345,7 +357,8 @@ public class Game1 : Game
 
         if (currentState == GameState.MainMenu)
         {
-            DrawMainMenu();
+            // Draw UI labels for MenuSystem
+            menuSystem.DrawUI();
         }
         else if (currentState == GameState.Settings)
         {
@@ -369,78 +382,7 @@ public class Game1 : Game
         base.Draw(gameTime);
     }
 
-    private void DrawMainMenu()
-    {
-        // Styling
-        ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, 10f);
-        ImGui.PushStyleVar(ImGuiStyleVar.FrameRounding, 5f);
-        ImGui.PushStyleColor(ImGuiCol.WindowBg, new System.Numerics.Vector4(0, 0, 0, 0.7f));
-        ImGui.PushStyleColor(ImGuiCol.Button, new System.Numerics.Vector4(0.2f, 0.6f, 1.0f, 0.8f));
-        ImGui.PushStyleColor(ImGuiCol.ButtonHovered, new System.Numerics.Vector4(0.3f, 0.7f, 1.0f, 1.0f));
-        ImGui.PushStyleColor(ImGuiCol.Text, new System.Numerics.Vector4(1, 1, 1, 1));
-
-        // Animate Window Position
-        float offsetY = (float)System.Math.Sin(menuTime * 2) * 5f;
-
-        ImGui.SetNextWindowPos(new System.Numerics.Vector2(_graphics.PreferredBackBufferWidth / 2 - 125, _graphics.PreferredBackBufferHeight / 2 - 150 + offsetY));
-        ImGui.SetNextWindowSize(new System.Numerics.Vector2(250, 350));
-
-        if (ImGui.Begin("Main Menu", ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoMove))
-        {
-            // Title
-            ImGui.SetWindowFontScale(2.0f);
-            float textWidth = ImGui.CalcTextSize("CELESTE EN NUL").X;
-            ImGui.SetCursorPosX((250 - textWidth) / 2);
-            ImGui.Text("CELESTE EN NUL");
-            ImGui.SetWindowFontScale(1.0f);
-
-            ImGui.Separator();
-            ImGui.Spacing();
-            ImGui.Spacing();
-
-            // Play Button
-            if (ImGui.Button("PLAY", new System.Numerics.Vector2(230, 50)))
-            {
-                RefreshLevelList();
-                currentState = GameState.LevelSelect;
-            }
-
-            ImGui.Spacing();
-
-            // Settings Button
-            if (ImGui.Button("SETTINGS", new System.Numerics.Vector2(230, 50)))
-            {
-                currentState = GameState.Settings;
-            }
-
-            ImGui.Spacing();
-
-            // Credits Button
-            if (ImGui.Button("CREDITS", new System.Numerics.Vector2(230, 50)))
-            {
-                currentState = GameState.Credits;
-            }
-
-            ImGui.Spacing();
-            ImGui.Separator();
-            ImGui.Spacing();
-
-            // Exit Button
-            ImGui.PushStyleColor(ImGuiCol.Button, new System.Numerics.Vector4(0.8f, 0.2f, 0.2f, 0.8f));
-            ImGui.PushStyleColor(ImGuiCol.ButtonHovered, new System.Numerics.Vector4(1.0f, 0.3f, 0.3f, 1.0f));
-            if (ImGui.Button("EXIT", new System.Numerics.Vector2(230, 40)))
-            {
-                Exit();
-            }
-            ImGui.PopStyleColor(2);
-
-            ImGui.End();
-        }
-
-        ImGui.PopStyleColor(4);
-        ImGui.PopStyleVar(2);
-    }
-
+    // ... Keep existing DrawSettingsMenu, DrawCreditsMenu, DrawLevelSelectMenu, RefreshLevelList methods ...
     private void DrawSettingsMenu()
     {
         ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, 10f);
