@@ -83,6 +83,11 @@ namespace PlatformerEngine.Source.Entities
             CurrentState = PlayerState.Idle;
         }
 
+        public void SetSpawnPoint(Vector2 position)
+        {
+            spawnPosition = position;
+        }
+
         public void Update(Camera camera)
         {
             // Debug Respawn
@@ -559,6 +564,10 @@ namespace PlatformerEngine.Source.Entities
             {
                 Respawn();
             }
+            else if (tileType == TileMap.LEVEL_END)
+            {
+                OnLevelComplete?.Invoke();
+            }
         }
 
         private void Respawn()
@@ -569,5 +578,8 @@ namespace PlatformerEngine.Source.Entities
             Squish(0.5f, 1.5f); // Stretch effect
             SpawnParticles(Vector2.Zero, 2.0f); // Explosion?
         }
+
+        public event System.Action OnLevelComplete;
+
     }
 }

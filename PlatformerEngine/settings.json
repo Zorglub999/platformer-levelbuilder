@@ -2,6 +2,6 @@
   "ResolutionWidth": 1280,
   "ResolutionHeight": 720,
   "IsVSync": true,
-  "IsFullscreen": true,
-  "MasterVolume": 1
+  "IsFullscreen": false,
+  "MasterVolume": 0.701
 }

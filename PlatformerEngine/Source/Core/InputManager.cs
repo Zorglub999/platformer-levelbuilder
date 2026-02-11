@@ -83,13 +83,14 @@ namespace PlatformerEngine.Source.Core
         private static void UpdateJump()
         {
             // Jump Pressed (Initial frame)
-            bool kbdJump = _currentKeyboardState.IsKeyDown(Keys.Space) && !_previousKeyboardState.IsKeyDown(Keys.Space);
+            bool kbdJump = (_currentKeyboardState.IsKeyDown(Keys.Space) && !_previousKeyboardState.IsKeyDown(Keys.Space)) ||
+                           (_currentKeyboardState.IsKeyDown(Keys.Z) && !_previousKeyboardState.IsKeyDown(Keys.Z));
             bool gpJump = _currentGamePadState.IsConnected && (_currentGamePadState.Buttons.A == ButtonState.Pressed && _previousGamePadState.Buttons.A == ButtonState.Released);
 
             JumpPressed = kbdJump || gpJump;
 
             // Jump Held (Continuous)
-            kbdJump = _currentKeyboardState.IsKeyDown(Keys.Space);
+            kbdJump = _currentKeyboardState.IsKeyDown(Keys.Space) || _currentKeyboardState.IsKeyDown(Keys.Z);
             gpJump = _currentGamePadState.IsConnected && _currentGamePadState.Buttons.A == ButtonState.Pressed;
 
             JumpHeld = kbdJump || gpJump;

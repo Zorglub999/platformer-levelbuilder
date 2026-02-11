@@ -16,7 +16,8 @@ public enum GameState
     MainMenu,
     Playing,
     Settings,
-    Credits
+    Credits,
+    LevelSelect
 }
 
 public class Game1 : Game
@@ -34,6 +35,7 @@ public class Game1 : Game
     private Player player;
     private ParticleSystem particleSystem;
     private List<DraggableBlock> draggableBlocks;
+    private AssetLoader assetLoader;
 
     // Editor systems
     private ImGuiRenderer imguiRenderer;
@@ -48,6 +50,9 @@ public class Game1 : Game
 
     // UI Animation State
     private float menuTime = 0f;
+
+    // Level Selection
+    private List<string> levelFiles = new List<string>();
 
     public Game1()
     {
@@ -64,7 +69,7 @@ public class Game1 : Game
     {
         base.Initialize();
         InputManager.Initialize();
-        Window.Title = "Platformer Engine";
+        Window.Title = "Celeste mais en moins bien";
     }
 
     protected override void LoadContent()
@@ -90,6 +95,16 @@ public class Game1 : Game
         // Initialize player at spawn position (needs draggable blocks for collision)
         player = new Player(new Vector2(100, 100), tileMap, pixelTexture, particleSystem, draggableBlocks);
 
+        // Initialize Asset Loader and load decorations
+        assetLoader = new AssetLoader(GraphicsDevice);
+        assetLoader.LoadDecorations("Content/Decorations");
+
+        player.OnLevelComplete += () =>
+        {
+            currentState = GameState.MainMenu;
+            IsMouseVisible = true;
+        };
+
         // Initialize editor systems
         imguiRenderer = new ImGuiRenderer(this);
         levelEditor = new LevelEditor(
@@ -99,7 +114,8 @@ public class Game1 : Game
             _graphics.PreferredBackBufferWidth,
             _graphics.PreferredBackBufferHeight,
             draggableBlocks,
-            pixelTexture
+            pixelTexture,
+            assetLoader
         );
 
         previousKeyboardState = Keyboard.GetState();
@@ -115,7 +131,23 @@ public class Game1 : Game
         // actually Load clears it internally if we pass the list.
         // Reset player if spawn point not found
         // Reset player if spawn point not found
+        // Reset player if spawn point not found
         player.Position = new Vector2(100, 100);
+
+        // Find spawn point in map
+        for (int x = 0; x < tileMap.Width; x++)
+        {
+            for (int y = 0; y < tileMap.Height; y++)
+            {
+                if (tileMap.GetTile(x, y) == TileMap.PLAYER_SPAWN)
+                {
+                    player.Position = new Vector2(x * TileMap.TileSize, y * TileMap.TileSize);
+                    break;
+                }
+            }
+        }
+
+        player.SetSpawnPoint(player.Position);
 
         // If level loaded is empty (all 0s), generate a default one
         // Check if bottom row is empty as a heuristic
@@ -161,6 +193,10 @@ public class Game1 : Game
             {
                 currentState = GameState.MainMenu;
                 IsMouseVisible = true;
+            }
+            else if (currentState == GameState.LevelSelect)
+            {
+                currentState = GameState.MainMenu;
             }
         }
 
@@ -258,7 +294,17 @@ public class Game1 : Game
             );
 
             // Draw tilemap with culling
-            tileMap.Draw(_spriteBatch, camera, _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight);
+            // In Game Mode (not Editor), we might want different visibility rules, 
+            // but the user requirement said "Show Colliders" checkbox controls it. 
+            // Since the checkbox is in LevelEditor, we use its state.
+            // If LevelEditor is null (shouldn't be), default to true.
+            bool showColliders = levelEditor?.ShowColliders ?? true;
+
+            // However, usually in "Game Mode" (when playing), we might NOT want to see colliders by default if looking for "beauty".
+            // But the user said: "decocher 'Show Colliders' pour que le jeu soit beau". 
+            // This implies the checkbox in Editor controls global rendering.
+
+            tileMap.Draw(_spriteBatch, camera, _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight, assetLoader, showColliders);
 
             // Draw draggable blocks
             foreach (var block in draggableBlocks)
@@ -286,6 +332,11 @@ public class Game1 : Game
                 _spriteBatch.Draw(pixelTexture, cursorRectV, Color.Yellow);
             }
 
+            if (isEditorMode)
+            {
+                levelEditor.DrawWorld(_spriteBatch);
+            }
+
             _spriteBatch.End();
         }
 
@@ -307,6 +358,10 @@ public class Game1 : Game
         else if (currentState == GameState.Playing && isEditorMode)
         {
             levelEditor.DrawUI();
+        }
+        else if (currentState == GameState.LevelSelect)
+        {
+            DrawLevelSelectMenu();
         }
 
         imguiRenderer.EndLayout();
@@ -334,9 +389,9 @@ public class Game1 : Game
         {
             // Title
             ImGui.SetWindowFontScale(2.0f);
-            float textWidth = ImGui.CalcTextSize("PLATFORMER").X;
+            float textWidth = ImGui.CalcTextSize("CELESTE EN NUL").X;
             ImGui.SetCursorPosX((250 - textWidth) / 2);
-            ImGui.Text("PLATFORMER");
+            ImGui.Text("CELESTE EN NUL");
             ImGui.SetWindowFontScale(1.0f);
 
             ImGui.Separator();
@@ -346,9 +401,8 @@ public class Game1 : Game
             // Play Button
             if (ImGui.Button("PLAY", new System.Numerics.Vector2(230, 50)))
             {
-                LoadLevel("level1.json");
-                currentState = GameState.Playing;
-                IsMouseVisible = false; // Hide mouse during gameplay
+                RefreshLevelList();
+                currentState = GameState.LevelSelect;
             }
 
             ImGui.Spacing();
@@ -485,6 +539,67 @@ public class Game1 : Game
             ImGui.Spacing();
 
             if (ImGui.Button("BACK", new System.Numerics.Vector2(280, 40)))
+            {
+                currentState = GameState.MainMenu;
+            }
+            ImGui.End();
+        }
+        ImGui.PopStyleColor();
+        ImGui.PopStyleVar();
+    }
+
+    private void RefreshLevelList()
+    {
+        levelFiles.Clear();
+        string levelsDir = "Levels";
+        if (System.IO.Directory.Exists(levelsDir))
+        {
+            string[] files = System.IO.Directory.GetFiles(levelsDir, "*.json");
+            foreach (string file in files)
+            {
+                levelFiles.Add(System.IO.Path.GetFileName(file));
+            }
+        }
+    }
+
+    private void DrawLevelSelectMenu()
+    {
+        ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, 10f);
+        ImGui.PushStyleColor(ImGuiCol.WindowBg, new System.Numerics.Vector4(0, 0, 0, 0.8f));
+
+        ImGui.SetNextWindowPos(new System.Numerics.Vector2(_graphics.PreferredBackBufferWidth / 2 - 200, _graphics.PreferredBackBufferHeight / 2 - 200));
+        ImGui.SetNextWindowSize(new System.Numerics.Vector2(400, 400));
+
+        if (ImGui.Begin("Select Level", ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoTitleBar))
+        {
+            ImGui.SetWindowFontScale(1.5f);
+            ImGui.Text("SELECT LEVEL");
+            ImGui.SetWindowFontScale(1.0f);
+            ImGui.Separator();
+            ImGui.Spacing();
+
+            if (levelFiles.Count == 0)
+            {
+                ImGui.Text("No levels found in Levels/ directory.");
+            }
+            else
+            {
+                foreach (string levelFile in levelFiles)
+                {
+                    if (ImGui.Button(levelFile, new System.Numerics.Vector2(380, 30)))
+                    {
+                        LoadLevel(levelFile);
+                        currentState = GameState.Playing;
+                        IsMouseVisible = false; // Hide mouse during gameplay
+                    }
+                }
+            }
+
+            ImGui.Spacing();
+            ImGui.Separator();
+            ImGui.Spacing();
+
+            if (ImGui.Button("BACK", new System.Numerics.Vector2(380, 40)))
             {
                 currentState = GameState.MainMenu;
             }
