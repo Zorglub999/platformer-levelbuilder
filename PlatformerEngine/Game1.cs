@@ -100,8 +100,11 @@ public class Game1 : Game
         // Initialize draggable blocks (empty by default)
         draggableBlocks = new List<DraggableBlock>();
 
+        // Load character texture
+        Texture2D characterTexture = Content.Load<Texture2D>("character");
+
         // Initialize player at spawn position (needs draggable blocks for collision)
-        player = new Player(new Vector2(100, 100), tileMap, pixelTexture, particleSystem, draggableBlocks);
+        player = new Player(new Vector2(100, 100), tileMap, pixelTexture, characterTexture, particleSystem, draggableBlocks);
 
         // Initialize Asset Loader and load decorations
         assetLoader = new AssetLoader(GraphicsDevice);

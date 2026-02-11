@@ -62,6 +62,7 @@ namespace PlatformerEngine.Source.Entities
         // References
         private TileMap tileMap;
         private Texture2D pixelTexture;
+        private Texture2D texture;
         private List<DraggableBlock> draggableBlocks;
         private ParticleSystem particleSystem;
 
@@ -69,7 +70,7 @@ namespace PlatformerEngine.Source.Entities
         public Vector2 RenderScale { get; private set; }
         private const float SquishSpeed = 0.2f;
 
-        public Player(Vector2 startPosition, TileMap tileMap, Texture2D pixelTexture, ParticleSystem particleSystem, List<DraggableBlock> draggableBlocks)
+        public Player(Vector2 startPosition, TileMap tileMap, Texture2D pixelTexture, Texture2D texture, ParticleSystem particleSystem, List<DraggableBlock> draggableBlocks)
         {
             Position = startPosition;
             spawnPosition = startPosition;
@@ -77,6 +78,7 @@ namespace PlatformerEngine.Source.Entities
             velocity = Vector2.Zero;
             this.tileMap = tileMap;
             this.pixelTexture = pixelTexture;
+            this.texture = texture;
             this.particleSystem = particleSystem;
             this.draggableBlocks = draggableBlocks;
             RenderScale = Vector2.One;
@@ -522,7 +524,6 @@ namespace PlatformerEngine.Source.Entities
                 }
             }
         }
-
         public void Draw(SpriteBatch spriteBatch)
         {
             // Draw Ghost Trails
@@ -533,7 +534,8 @@ namespace PlatformerEngine.Source.Entities
             }
 
             // Draw Player
-            Color playerColor = canDash ? Color.White : Color.Cyan;
+            Color playerColor = Color.White; // Use white to draw texture as-is
+            if (!canDash) playerColor = Color.Cyan; // Tint if can't dash? Or maybe just White always for now? Let's keep tint logic but apply to texture
 
             Vector2 center = Position + Size * 0.5f;
             Vector2 scaledSize = Size * RenderScale;
@@ -544,7 +546,7 @@ namespace PlatformerEngine.Source.Entities
                 (int)scaledSize.Y
             );
 
-            spriteBatch.Draw(pixelTexture, destRect, playerColor);
+            spriteBatch.Draw(texture, destRect, playerColor);
         }
         private void CheckSpecialTiles()
         {

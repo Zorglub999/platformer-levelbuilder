@@ -11,5 +11,12 @@
 #-------------------------------- References --------------------------------#
 
 
+
 #---------------------------------- Content ---------------------------------#
+
+#begin character.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/build:character.png
+
 

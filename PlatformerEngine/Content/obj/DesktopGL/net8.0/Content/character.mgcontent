@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PipelineBuildEvent xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <SourceFile>C:/Users/Zorglub/Desktop/game-projects/platformer-1/PlatformerEngine/Content/character.png</SourceFile>
+  <SourceTime>2026-02-11T14:13:12.1069175+01:00</SourceTime>
+  <DestFile>C:/Users/Zorglub/Desktop/game-projects/platformer-1/PlatformerEngine/Content/bin/DesktopGL/Content/character.xnb</DestFile>
+  <DestTime>2026-02-11T14:17:47.7022354+01:00</DestTime>
+  <Importer>TextureImporter</Importer>
+  <ImporterTime>2025-10-20T16:25:32+02:00</ImporterTime>
+  <Processor>TextureProcessor</Processor>
+  <ProcessorTime>2025-10-20T16:25:32+02:00</ProcessorTime>
+  <Dependencies />
+  <BuildAsset />
+  <BuildOutput />
+</PipelineBuildEvent>
