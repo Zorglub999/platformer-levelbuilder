@@ -353,6 +353,14 @@ namespace PlatformerEngine.Source.Levels
                 }
             }
         }
+        /// <summary>
+        /// Clears the tilemap, setting all tiles to EMPTY and removing all decorations.
+        /// </summary>
+        public void Clear()
+        {
+            Array.Clear(grid, 0, grid.Length);
+            decorationGrid.Clear();
+        }
     }
 
     public class TileMapData

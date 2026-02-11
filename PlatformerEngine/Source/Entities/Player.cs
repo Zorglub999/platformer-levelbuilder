@@ -88,6 +88,15 @@ namespace PlatformerEngine.Source.Entities
             spawnPosition = position;
         }
 
+        public void Reset(Vector2 position)
+        {
+            Position = position;
+            spawnPosition = position;
+            velocity = Vector2.Zero;
+            CurrentState = PlayerState.Idle;
+            isGrounded = false;
+        }
+
         public void Update(Camera camera)
         {
             // Debug Respawn

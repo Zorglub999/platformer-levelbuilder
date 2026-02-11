@@ -54,8 +54,13 @@ public class Game1 : Game
     // UI Animation State
     private float menuTime = 0f;
 
-    // Level Selection
-    private List<string> levelFiles = new List<string>();
+    // Level Management State
+    private string levelToDelete = null;
+    private bool showDeletePopup = false;
+    private string levelToRename = null;
+    private string renameBuffer = "";
+    private bool showRenamePopup = false;
+    private string renameError = "";
 
     public Game1()
     {
@@ -199,6 +204,22 @@ public class Game1 : Game
 
         // Spawn Point
         player.Position = new Vector2(100, (tileMap.Height - 4) * TileMap.TileSize);
+    }
+
+    private void CreateNewLevel()
+    {
+        tileMap.Clear();
+        draggableBlocks.Clear();
+
+        // Reset player to a default starting position
+        player.Reset(new Vector2(100, 100));
+
+        // Enable editor mode immediately so the player doesn't fall
+        isEditorMode = true;
+        IsMouseVisible = true;
+
+        // Switch to playing state
+        currentState = GameState.Playing;
     }
 
     protected override void Update(GameTime gameTime)
@@ -492,62 +513,204 @@ public class Game1 : Game
 
     private void RefreshLevelList()
     {
-        levelFiles.Clear();
-        string levelsDir = "Levels";
-        if (System.IO.Directory.Exists(levelsDir))
-        {
-            string[] files = System.IO.Directory.GetFiles(levelsDir, "*.json");
-            foreach (string file in files)
-            {
-                levelFiles.Add(System.IO.Path.GetFileName(file));
-            }
-        }
+        PlatformerEngine.Source.Core.LevelManager.RefreshLevels();
     }
 
     private void DrawLevelSelectMenu()
     {
         ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, 10f);
-        ImGui.PushStyleColor(ImGuiCol.WindowBg, new System.Numerics.Vector4(0, 0, 0, 0.8f));
+        ImGui.PushStyleColor(ImGuiCol.WindowBg, new System.Numerics.Vector4(0, 0, 0, 0.9f)); // Darker bg
 
-        ImGui.SetNextWindowPos(new System.Numerics.Vector2(_graphics.PreferredBackBufferWidth / 2 - 200, _graphics.PreferredBackBufferHeight / 2 - 200));
-        ImGui.SetNextWindowSize(new System.Numerics.Vector2(400, 400));
+        ImGui.SetNextWindowPos(new System.Numerics.Vector2(_graphics.PreferredBackBufferWidth / 2 - 300, _graphics.PreferredBackBufferHeight / 2 - 250));
+        ImGui.SetNextWindowSize(new System.Numerics.Vector2(600, 500)); // Larger window
 
         if (ImGui.Begin("Select Level", ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoTitleBar))
         {
             ImGui.SetWindowFontScale(1.5f);
-            ImGui.Text("SELECT LEVEL");
+            ImGui.Text("LEVELS");
             ImGui.SetWindowFontScale(1.0f);
+            ImGui.SameLine();
+
+            // Right align Create New
+            ImGui.SetCursorPosX(ImGui.GetWindowWidth() - 120);
+            if (ImGui.Button("NEW LEVEL", new System.Numerics.Vector2(100, 30)))
+            {
+                // Create with unique name and start editing
+                string newName = PlatformerEngine.Source.Core.LevelManager.GetUniqueLevelName();
+                CreateNewLevel();
+            }
+
             ImGui.Separator();
             ImGui.Spacing();
 
-            if (levelFiles.Count == 0)
+            // List Levels
+            var levels = PlatformerEngine.Source.Core.LevelManager.LevelFiles;
+
+            if (levels.Count == 0)
             {
-                ImGui.Text("No levels found in Levels/ directory.");
+                ImGui.Text("No levels found.");
             }
             else
             {
-                foreach (string levelFile in levelFiles)
+                // List Box
+                if (ImGui.BeginChild("LevelList", new System.Numerics.Vector2(0, 350), ImGuiChildFlags.None))
                 {
-                    if (ImGui.Button(levelFile, new System.Numerics.Vector2(380, 30)))
+                    for (int i = 0; i < levels.Count; i++)
                     {
-                        LoadLevel(levelFile);
-                        currentState = GameState.Playing;
-                        IsMouseVisible = false; // Hide mouse during gameplay
+                        string level = levels[i];
+                        ImGui.PushID(i);
+
+                        // Play Button (Name)
+                        if (ImGui.Button(level, new System.Numerics.Vector2(280, 30)))
+                        {
+                            LoadLevel(level);
+                            currentState = GameState.Playing;
+                            IsMouseVisible = false;
+                        }
+
+                        ImGui.SameLine();
+
+                        // Up
+                        if (i > 0)
+                        {
+                            if (ImGui.ArrowButton("##up", ImGuiDir.Up))
+                            {
+                                PlatformerEngine.Source.Core.LevelManager.MoveLevelUp(i);
+                            }
+                        }
+                        else
+                        {
+                            ImGui.Dummy(new System.Numerics.Vector2(ImGui.GetFrameHeight(), ImGui.GetFrameHeight())); // Spacer
+                        }
+
+                        ImGui.SameLine();
+
+                        // Down
+                        if (i < levels.Count - 1)
+                        {
+                            if (ImGui.ArrowButton("##down", ImGuiDir.Down))
+                            {
+                                PlatformerEngine.Source.Core.LevelManager.MoveLevelDown(i);
+                            }
+                        }
+                        else
+                        {
+                            ImGui.Dummy(new System.Numerics.Vector2(ImGui.GetFrameHeight(), ImGui.GetFrameHeight())); // Spacer
+                        }
+
+                        ImGui.SameLine();
+
+                        // Rename
+                        if (ImGui.Button("R"))
+                        {
+                            levelToRename = level;
+                            renameBuffer = level;
+                            showRenamePopup = true;
+                            renameError = "";
+                        }
+
+                        ImGui.SameLine();
+
+                        // Delete
+                        ImGui.PushStyleColor(ImGuiCol.Button, new System.Numerics.Vector4(0.8f, 0.2f, 0.2f, 1f));
+                        if (ImGui.Button("X"))
+                        {
+                            levelToDelete = level;
+                            showDeletePopup = true;
+                        }
+                        ImGui.PopStyleColor();
+
+                        ImGui.PopID();
                     }
+                    ImGui.EndChild();
                 }
             }
 
             ImGui.Spacing();
             ImGui.Separator();
-            ImGui.Spacing();
 
-            if (ImGui.Button("BACK", new System.Numerics.Vector2(380, 40)))
+            if (ImGui.Button("BACK", new System.Numerics.Vector2(100, 40)))
             {
                 currentState = GameState.MainMenu;
             }
+
             ImGui.End();
         }
         ImGui.PopStyleColor();
         ImGui.PopStyleVar();
+
+        // Draw Popups
+        if (showDeletePopup) DrawDeletePopup();
+        if (showRenamePopup) DrawRenamePopup();
+    }
+
+    private void DrawDeletePopup()
+    {
+        ImGui.OpenPopup("Delete Level?");
+
+        // Center popup
+        ImGui.SetNextWindowPos(new System.Numerics.Vector2(_graphics.PreferredBackBufferWidth / 2 - 150, _graphics.PreferredBackBufferHeight / 2 - 75));
+        ImGui.SetNextWindowSize(new System.Numerics.Vector2(300, 150));
+
+        if (ImGui.BeginPopupModal("Delete Level?", ref showDeletePopup, ImGuiWindowFlags.NoResize))
+        {
+            ImGui.TextWrapped($"Are you sure you want to delete\n'{levelToDelete}'?");
+            ImGui.Spacing();
+            ImGui.Spacing();
+
+            if (ImGui.Button("DELETE", new System.Numerics.Vector2(120, 0)))
+            {
+                PlatformerEngine.Source.Core.LevelManager.DeleteLevel(levelToDelete);
+                showDeletePopup = false;
+                levelToDelete = null;
+            }
+            ImGui.SameLine();
+            if (ImGui.Button("CANCEL", new System.Numerics.Vector2(120, 0)))
+            {
+                showDeletePopup = false;
+                levelToDelete = null;
+            }
+            ImGui.EndPopup();
+        }
+    }
+
+    private void DrawRenamePopup()
+    {
+        ImGui.OpenPopup("Rename Level");
+
+        ImGui.SetNextWindowPos(new System.Numerics.Vector2(_graphics.PreferredBackBufferWidth / 2 - 150, _graphics.PreferredBackBufferHeight / 2 - 100));
+        ImGui.SetNextWindowSize(new System.Numerics.Vector2(300, 200));
+
+        if (ImGui.BeginPopupModal("Rename Level", ref showRenamePopup, ImGuiWindowFlags.NoResize))
+        {
+            ImGui.InputText("Name", ref renameBuffer, 64);
+
+            if (!string.IsNullOrEmpty(renameError))
+            {
+                ImGui.TextColored(new System.Numerics.Vector4(1, 0, 0, 1), renameError);
+            }
+
+            ImGui.Spacing();
+
+            if (ImGui.Button("RENAME", new System.Numerics.Vector2(120, 0)))
+            {
+                if (PlatformerEngine.Source.Core.LevelManager.RenameLevel(levelToRename, renameBuffer))
+                {
+                    showRenamePopup = false;
+                    levelToRename = null;
+                }
+                else
+                {
+                    renameError = "Error renaming (exists?)";
+                }
+            }
+            ImGui.SameLine();
+            if (ImGui.Button("CANCEL", new System.Numerics.Vector2(120, 0)))
+            {
+                showRenamePopup = false;
+                levelToRename = null;
+            }
+            ImGui.EndPopup();
+        }
     }
 }
