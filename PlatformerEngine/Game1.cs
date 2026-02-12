@@ -62,6 +62,11 @@ public class Game1 : Game
     private bool showRenamePopup = false;
     private string renameError = "";
 
+    // New Level State
+    private bool showNewLevelPopup = false;
+    private string newLevelNameBuffer = "";
+    private string newLevelError = "";
+
     public Game1()
     {
         _graphics = new GraphicsDeviceManager(this);
@@ -109,11 +114,13 @@ public class Game1 : Game
         // Initialize Asset Loader and load decorations
         assetLoader = new AssetLoader(GraphicsDevice);
         assetLoader.LoadDecorations("Content/Decorations");
+        assetLoader.LoadMusic("Content/Music"); // Load music
 
         player.OnLevelComplete += () =>
         {
             currentState = GameState.MainMenu;
             IsMouseVisible = true;
+            Microsoft.Xna.Framework.Media.MediaPlayer.Stop(); // Stop music on menu
         };
 
         // Initialize editor systems
@@ -160,6 +167,27 @@ public class Game1 : Game
         // Pass draggableBlocks and pixelTexture to Load
         tileMap.Load(path, draggableBlocks, pixelTexture);
 
+        // Play Music
+        if (!string.IsNullOrEmpty(tileMap.MusicTrack) && assetLoader.MusicTracks.ContainsKey(tileMap.MusicTrack))
+        {
+            try
+            {
+                string musicPath = assetLoader.MusicTracks[tileMap.MusicTrack];
+                var song = Microsoft.Xna.Framework.Media.Song.FromUri(tileMap.MusicTrack, new System.Uri(musicPath));
+                Microsoft.Xna.Framework.Media.MediaPlayer.Play(song);
+                Microsoft.Xna.Framework.Media.MediaPlayer.IsRepeating = true;
+                Microsoft.Xna.Framework.Media.MediaPlayer.Volume = PlatformerEngine.Source.Core.SettingsManager.CurrentSettings.MasterVolume;
+            }
+            catch (System.Exception ex)
+            {
+                System.Console.WriteLine($"Error playing music: {ex.Message}");
+            }
+        }
+        else
+        {
+            Microsoft.Xna.Framework.Media.MediaPlayer.Stop();
+        }
+
         player.Position = new Vector2(100, 100);
 
         // Find spawn point in map
@@ -177,12 +205,13 @@ public class Game1 : Game
 
         player.SetSpawnPoint(player.Position);
 
-        // If level loaded is empty (all 0s), generate a default one
-        // Check if bottom row is empty as a heuristic
         if (!tileMap.IsSolid(new Vector2(100, 511 * TileMap.TileSize)))
         {
             GenerateDefaultLevel();
         }
+
+        // Set Editor Name
+        levelEditor.CurrentLevelName = filename;
     }
 
     private void GenerateDefaultLevel()
@@ -209,7 +238,7 @@ public class Game1 : Game
         player.Position = new Vector2(100, (tileMap.Height - 4) * TileMap.TileSize);
     }
 
-    private void CreateNewLevel()
+    private void CreateNewLevel(string levelName)
     {
         tileMap.Clear();
         draggableBlocks.Clear();
@@ -223,6 +252,9 @@ public class Game1 : Game
 
         // Switch to playing state
         currentState = GameState.Playing;
+
+        // Set name
+        levelEditor.CurrentLevelName = levelName;
     }
 
     protected override void Update(GameTime gameTime)
@@ -237,6 +269,7 @@ public class Game1 : Game
             {
                 currentState = GameState.MainMenu;
                 IsMouseVisible = true;
+                Microsoft.Xna.Framework.Media.MediaPlayer.Stop();
             }
             else if (currentState == GameState.LevelSelect)
             {
@@ -538,9 +571,10 @@ public class Game1 : Game
             ImGui.SetCursorPosX(ImGui.GetWindowWidth() - 120);
             if (ImGui.Button("NEW LEVEL", new System.Numerics.Vector2(100, 30)))
             {
-                // Create with unique name and start editing
-                string newName = PlatformerEngine.Source.Core.LevelManager.GetUniqueLevelName();
-                CreateNewLevel();
+                // Open Popup instead of immediate creation
+                newLevelNameBuffer = PlatformerEngine.Source.Core.LevelManager.GetUniqueLevelName();
+                showNewLevelPopup = true;
+                newLevelError = "";
             }
 
             ImGui.Separator();
@@ -645,6 +679,62 @@ public class Game1 : Game
         // Draw Popups
         if (showDeletePopup) DrawDeletePopup();
         if (showRenamePopup) DrawRenamePopup();
+        if (showNewLevelPopup) DrawNewLevelPopup();
+    }
+
+    private void DrawNewLevelPopup()
+    {
+        ImGui.OpenPopup("Create New Level");
+
+        ImGui.SetNextWindowPos(new System.Numerics.Vector2(_graphics.PreferredBackBufferWidth / 2 - 150, _graphics.PreferredBackBufferHeight / 2 - 100));
+        ImGui.SetNextWindowSize(new System.Numerics.Vector2(300, 200));
+
+        if (ImGui.BeginPopupModal("Create New Level", ref showNewLevelPopup, ImGuiWindowFlags.NoResize))
+        {
+            ImGui.Text("Enter Level Name:");
+            ImGui.InputText("##newlevelname", ref newLevelNameBuffer, 64);
+
+            if (!string.IsNullOrEmpty(newLevelError))
+            {
+                ImGui.TextColored(new System.Numerics.Vector4(1, 0, 0, 1), newLevelError);
+            }
+
+            ImGui.Spacing();
+            ImGui.Spacing();
+
+            if (ImGui.Button("CREATE", new System.Numerics.Vector2(120, 0)))
+            {
+                // Check if name is valid/unique
+                // Ensure extension is there or not? The LevelManager usually handles listing files.
+                // Let's ensure it ends with .json if not present, just for safety or consistency, 
+                // but usually the user just types a name. 
+                // Let's assume input is just the name without extension for simplicity, 
+                // and we add .json if missing when saving, OR we just trust LevelManager.
+                
+                // Check if file exists
+                string fullPath = System.IO.Path.Combine("Levels", newLevelNameBuffer);
+                if (!newLevelNameBuffer.EndsWith(".json")) fullPath += ".json";
+
+                if (System.IO.File.Exists(fullPath))
+                {
+                    newLevelError = "Level already exists!";
+                }
+                else
+                {
+                    string finalName = newLevelNameBuffer;
+                    if (!finalName.EndsWith(".json")) finalName += ".json";
+                    
+                    CreateNewLevel(finalName);
+                    showNewLevelPopup = false;
+                }
+            }
+            ImGui.SameLine();
+            if (ImGui.Button("CANCEL", new System.Numerics.Vector2(120, 0)))
+            {
+                showNewLevelPopup = false;
+            }
+            ImGui.EndPopup();
+        }
     }
 
     private void DrawDeletePopup()

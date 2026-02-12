@@ -496,26 +496,24 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\Zorglub\\.nuget\\packages\\": {}
+    "C:\\Users\\Elliot\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Zorglub\\Desktop\\game-projects\\platformer-1\\PlatformerEngine\\PlatformerEngine.csproj",
+      "projectUniqueName": "C:\\Users\\Elliot\\Desktop\\Antigravity Projects\\platformer-levelbuilder\\PlatformerEngine\\PlatformerEngine.csproj",
       "projectName": "PlatformerEngine",
-      "projectPath": "C:\\Users\\Zorglub\\Desktop\\game-projects\\platformer-1\\PlatformerEngine\\PlatformerEngine.csproj",
-      "packagesPath": "C:\\Users\\Zorglub\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Zorglub\\Desktop\\game-projects\\platformer-1\\PlatformerEngine\\obj\\",
+      "projectPath": "C:\\Users\\Elliot\\Desktop\\Antigravity Projects\\platformer-levelbuilder\\PlatformerEngine\\PlatformerEngine.csproj",
+      "packagesPath": "C:\\Users\\Elliot\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\Elliot\\Desktop\\Antigravity Projects\\platformer-levelbuilder\\PlatformerEngine\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\Zorglub\\AppData\\Roaming\\NuGet\\NuGet.Config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        "C:\\Users\\Elliot\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net8.0"
       ],
       "sources": {
-        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {

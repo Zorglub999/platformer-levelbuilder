@@ -36,6 +36,11 @@ namespace PlatformerEngine.Source.Levels
         public int Width => width;
         public int Height => height;
 
+        /// <summary>
+        /// Name of the background music track
+        /// </summary>
+        public string MusicTrack { get; set; }
+
         public TileMap(int width, int height, Texture2D pixelTexture)
         {
             this.width = width;
@@ -44,6 +49,8 @@ namespace PlatformerEngine.Source.Levels
             grid = new int[width, height];
             decorationGrid = new Dictionary<Point, string>();
         }
+
+        // ... SetTile, GetTileAt, GetTile, SetDecoration, GetDecoration, IsSolid, Draw ...
 
         /// <summary>
         /// Set a tile at grid coordinates
@@ -56,9 +63,6 @@ namespace PlatformerEngine.Source.Levels
             }
         }
 
-        /// <summary>
-        /// Get tile type at world position
-        /// </summary>
         public int GetTileAt(Vector2 position)
         {
             int gridX = (int)(position.X / TileSize);
@@ -70,9 +74,6 @@ namespace PlatformerEngine.Source.Levels
             return grid[gridX, gridY];
         }
 
-        /// <summary>
-        /// Get tile type at grid coordinates
-        /// </summary>
         public int GetTile(int x, int y)
         {
             if (x < 0 || x >= width || y < 0 || y >= height)
@@ -81,9 +82,6 @@ namespace PlatformerEngine.Source.Levels
             return grid[x, y];
         }
 
-        /// <summary>
-        /// Set a decoration at grid coordinates
-        /// </summary>
         public void SetDecoration(int x, int y, string textureName)
         {
             if (x >= 0 && x < width && y >= 0 && y < height)
@@ -99,9 +97,6 @@ namespace PlatformerEngine.Source.Levels
             }
         }
 
-        /// <summary>
-        /// Get decoration texture name at grid coordinates (or null if none)
-        /// </summary>
         public string GetDecoration(int x, int y)
         {
             if (decorationGrid.TryGetValue(new Point(x, y), out string textureName))
@@ -111,26 +106,14 @@ namespace PlatformerEngine.Source.Levels
             return null;
         }
 
-        /// <summary>
-        /// Check if there's a solid tile at world position
-        /// </summary>
         public bool IsSolid(Vector2 position)
         {
             return GetTileAt(position) == WALL;
         }
 
-        /// <summary>
-        /// Draw the tilemap
-        /// </summary>
-        /// <summary>
-        /// Draw the tilemap
-        /// </summary>
-        /// <summary>
-        /// Draw the tilemap
-        /// </summary>
         public void Draw(SpriteBatch spriteBatch, Camera camera, int screenWidth, int screenHeight, AssetLoader assetLoader = null, bool showColliders = true)
         {
-            Color wallColor = new Color(100, 100, 100) * (showColliders ? 1f : 0f); // Make invisible if not showing colliders
+             Color wallColor = new Color(100, 100, 100) * (showColliders ? 1f : 0f); // Make invisible if not showing colliders
             if (showColliders) wallColor = new Color(100, 100, 100, 128); // Semi-transparent if showing colliders over deco
 
             Color spawnColor = new Color(100, 200, 100) * (showColliders ? 1f : 0f);
@@ -247,7 +230,8 @@ namespace PlatformerEngine.Source.Levels
                     Height = height,
                     Tiles = ConvertGridToArray(),
                     Blocks = blockDataList,
-                    Decorations = decorationDataList
+                    Decorations = decorationDataList,
+                    MusicTrack = MusicTrack
                 };
 
                 string json = JsonSerializer.Serialize(data, new JsonSerializerOptions
@@ -310,6 +294,8 @@ namespace PlatformerEngine.Source.Levels
                             decorationGrid[new Point(deco.X, deco.Y)] = deco.TextureName;
                         }
                     }
+                    
+                    MusicTrack = data.MusicTrack;
 
                     Console.WriteLine($"Level loaded from {filename}");
                 }
@@ -324,9 +310,8 @@ namespace PlatformerEngine.Source.Levels
             }
         }
 
-        /// <summary>
-        /// Convert 2D grid to 1D array for serialization
-        /// </summary>
+        // ... ConvertGridToArray, ConvertArrayToGrid, Clear ...
+
         private int[] ConvertGridToArray()
         {
             int[] array = new int[width * height];
@@ -340,9 +325,6 @@ namespace PlatformerEngine.Source.Levels
             return array;
         }
 
-        /// <summary>
-        /// Convert 1D array back to 2D grid
-        /// </summary>
         private void ConvertArrayToGrid(int[] array)
         {
             for (int y = 0; y < height; y++)
@@ -353,13 +335,12 @@ namespace PlatformerEngine.Source.Levels
                 }
             }
         }
-        /// <summary>
-        /// Clears the tilemap, setting all tiles to EMPTY and removing all decorations.
-        /// </summary>
+
         public void Clear()
         {
             Array.Clear(grid, 0, grid.Length);
             decorationGrid.Clear();
+            MusicTrack = null;
         }
     }
 
@@ -370,6 +351,7 @@ namespace PlatformerEngine.Source.Levels
         public int[] Tiles { get; set; }
         public List<DraggableBlockData> Blocks { get; set; }
         public List<DecorationData> Decorations { get; set; }
+        public string MusicTrack { get; set; }
     }
 
     public class DraggableBlockData

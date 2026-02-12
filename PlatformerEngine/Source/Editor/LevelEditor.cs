@@ -26,7 +26,7 @@ public class LevelEditor
     private int selectedTileType = TileMap.WALL;
     private string selectedDecoration = null;
     private bool placingDraggableBlock = false;
-    private string saveFilename = "level1.json";
+    public string CurrentLevelName { get; set; } = "level1.json";
     private string levelsDirectory = "Levels";
     private bool showPalette = true;
     private bool showFileMenu = true;
@@ -669,29 +669,64 @@ public class LevelEditor
                 ImGui.Text("Level File Management:");
                 ImGui.Separator();
 
-                // Filename input
-                ImGui.InputText("Filename", ref saveFilename, 256);
+                // Display current level name
+                ImGui.Text($"Current Level: {CurrentLevelName}");
 
                 ImGui.Spacing();
 
                 // Save button
                 if (ImGui.Button("Save Level", new System.Numerics.Vector2(140, 30)))
                 {
-                    string path = System.IO.Path.Combine(levelsDirectory, saveFilename);
+                    string path = System.IO.Path.Combine(levelsDirectory, CurrentLevelName);
                     tileMap.Save(path, draggableBlocks);
                 }
 
                 ImGui.SameLine();
 
-                // Load button
-                if (ImGui.Button("Load Level", new System.Numerics.Vector2(140, 30)))
+                // Load button (Keep for quick reload or debug, but maybe hide if users should use main menu?)
+                // Let's keep it but make it reload current level
+                 if (ImGui.Button("Reload Level", new System.Numerics.Vector2(140, 30)))
                 {
-                    string path = System.IO.Path.Combine(levelsDirectory, saveFilename);
-                    tileMap.Load(path, draggableBlocks, pixelTexture);
+                    string path = System.IO.Path.Combine(levelsDirectory, CurrentLevelName);
+                    if (System.IO.File.Exists(path))
+                    {
+                        tileMap.Load(path, draggableBlocks, pixelTexture);
+                    }
                 }
 
                 ImGui.Spacing();
-                ImGui.TextWrapped("Tip: Files are saved in the game's root directory.");
+                ImGui.Separator();
+                ImGui.Text("Level Music:");
+
+                // Music Selector
+                string currentMusic = tileMap.MusicTrack ?? "None";
+                if (ImGui.BeginCombo("##musicselector", currentMusic))
+                {
+                    // Option for no music
+                    bool isNoneSelected = currentMusic == "None";
+                    if (ImGui.Selectable("None", isNoneSelected))
+                    {
+                        tileMap.MusicTrack = null;
+                    }
+                    if (isNoneSelected) ImGui.SetItemDefaultFocus();
+
+                    if (assetLoader != null)
+                    {
+                        foreach (var trackName in assetLoader.MusicTracks.Keys)
+                        {
+                            bool isSelected = currentMusic == trackName;
+                            if (ImGui.Selectable(trackName, isSelected))
+                            {
+                                tileMap.MusicTrack = trackName;
+                            }
+                            if (isSelected) ImGui.SetItemDefaultFocus();
+                        }
+                    }
+                    ImGui.EndCombo();
+                }
+
+                ImGui.Spacing();
+                ImGui.TextWrapped("Tip: Levels are saved automatically to the Levels folder.");
             }
             ImGui.End();
         }

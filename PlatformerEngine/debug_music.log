@@ -1,0 +1,11 @@
+Loading Level: demo_level.json
+MusicTrack found in Level: Level_1
+Path found: C:\Users\Elliot\Desktop\Antigravity Projects\platformer-levelbuilder\PlatformerEngine\Content\Music\Level_1.mp3
+URI created: file:///C:/Users/Elliot/Desktop/Antigravity Projects/platformer-levelbuilder/PlatformerEngine/Content/Music/Level_1.mp3
+EXCEPTION inside Play: Could not load the specified container! (Parameter 'containerReader')
+   at NVorbis.VorbisReader..ctor(Stream stream, Boolean closeOnDispose)
+   at Microsoft.Xna.Framework.Audio.OggStream.Open(Boolean precache)
+   at Microsoft.Xna.Framework.Audio.OggStream.Prepare()
+   at Microsoft.Xna.Framework.Media.Song.PlatformInitialize(String fileName)
+   at Microsoft.Xna.Framework.Media.Song.FromUri(String name, Uri uri)
+   at PlatformerEngine.Game1.LoadLevel(String filename) in C:\Users\Elliot\Desktop\Antigravity Projects\platformer-levelbuilder\PlatformerEngine\Game1.cs:line 189

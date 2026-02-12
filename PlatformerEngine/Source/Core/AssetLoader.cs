@@ -20,6 +20,48 @@ public class AssetLoader
     {
         this.graphicsDevice = graphicsDevice;
         decorations = new Dictionary<string, Texture2D>();
+        musicTracks = new Dictionary<string, string>();
+    }
+
+    private Dictionary<string, string> musicTracks;
+    public IReadOnlyDictionary<string, string> MusicTracks => musicTracks;
+
+    /// <summary>
+    /// Scans the specified directory for .mp3 files and registers them.
+    /// Values are absolute paths for use with Song.FromUri.
+    /// </summary>
+    public void LoadMusic(string relativePath)
+    {
+        musicTracks.Clear();
+
+        if (!Directory.Exists(relativePath))
+        {
+            try
+            {
+                Directory.CreateDirectory(relativePath);
+                Console.WriteLine($"Created directory: {relativePath}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to create directory {relativePath}: {ex.Message}");
+                return;
+            }
+        }
+
+        string[] files = Directory.GetFiles(relativePath, "*.ogg"); // DesktopGL only supports OGG/WAV for Song.FromUri
+        Console.WriteLine($"Found {files.Length} music files in {relativePath}");
+
+        foreach (string file in files)
+        {
+            string fileName = Path.GetFileNameWithoutExtension(file);
+            /*
+             * Store the FULL ABSOLUTE PATH so Song.FromUri can find it reliably.
+             * Relative paths can be tricky with Songs.
+             */
+             string fullPath = Path.GetFullPath(file);
+             musicTracks[fileName] = fullPath;
+             Console.WriteLine($"Loaded music track: {fileName} -> {fullPath}");
+        }
     }
 
     /// <summary>
