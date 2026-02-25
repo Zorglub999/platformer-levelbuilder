@@ -501,11 +501,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Elliot\\Desktop\\Antigravity Projects\\platformer-levelbuilder\\PlatformerEngine\\PlatformerEngine.csproj",
+      "projectUniqueName": "C:\\Users\\Elliot\\Desktop\\Dev projects\\platformer-levelbuilder\\PlatformerEngine\\PlatformerEngine.csproj",
       "projectName": "PlatformerEngine",
-      "projectPath": "C:\\Users\\Elliot\\Desktop\\Antigravity Projects\\platformer-levelbuilder\\PlatformerEngine\\PlatformerEngine.csproj",
+      "projectPath": "C:\\Users\\Elliot\\Desktop\\Dev projects\\platformer-levelbuilder\\PlatformerEngine\\PlatformerEngine.csproj",
       "packagesPath": "C:\\Users\\Elliot\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Elliot\\Desktop\\Antigravity Projects\\platformer-levelbuilder\\PlatformerEngine\\obj\\",
+      "outputPath": "C:\\Users\\Elliot\\Desktop\\Dev projects\\platformer-levelbuilder\\PlatformerEngine\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\Elliot\\AppData\\Roaming\\NuGet\\NuGet.Config"
